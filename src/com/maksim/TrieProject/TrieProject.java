@@ -1,9 +1,11 @@
 package com.maksim.TrieProject;
 
+import java.io.*;
 import java.util.Objects;
 import java.util.Scanner;
 
 public class TrieProject {
+    public static final String FILE_PATH = "trie.bin";
     private static final String mainMenu = """
             
             Выберите действие:
@@ -28,8 +30,13 @@ public class TrieProject {
                 if (Objects.equals(word, "")) {
                     System.out.println("Вы не можете добавить пустое слово");
                 } else {
-                    trie.insert(word);
-                    System.out.println("Успешно!");
+                    try {
+                        trie.insert(word);
+                        System.out.println("Успешно!");
+                    } catch (IllegalArgumentException ex) {
+                        System.out.println(ex.getMessage());
+                        return true;
+                    }
                 }
             }
             case "2" -> {
@@ -77,10 +84,23 @@ public class TrieProject {
     }
 
     public static void main(String[] args) {
-        Trie trie = new Trie();
+        Trie trie;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
+            trie = (Trie) ois.readObject();
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Файл с Trie не найден");
+            trie = new Trie();
+            try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
+                System.out.println("Создан новый");
+            } catch (IOException ex2) {
+                System.out.println("Произошла ошибка сохранения файла");
+                return;
+            }
+        }
 
         do {
             printFrame();
         } while (!processAction(trie));
+
     }
 }

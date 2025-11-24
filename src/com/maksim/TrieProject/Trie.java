@@ -3,8 +3,13 @@ package com.maksim.TrieProject;
 import com.maksim.TrieProject.utils.HashMap;
 import com.maksim.TrieProject.utils.LinkedList;
 
-public class Trie {
-    private static class Node {
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class Trie implements Serializable {
+    private static class Node implements Serializable {
         private boolean isTerminal;
         private final HashMap<Character, Node> children;
 
@@ -20,7 +25,7 @@ public class Trie {
         root = new Node();
     }
 
-    public void insert(String word) {
+    public void insert(String word) throws IllegalArgumentException {
         Node cur = root;
         for (int i = 0; i < word.length(); i++) {
             Node node = cur.children.get(word.charAt(i));
@@ -31,6 +36,7 @@ public class Trie {
             cur = cur.children.get(word.charAt(i));
         }
         cur.isTerminal = true;
+        update();
     }
 
     private Node search(String word) {
@@ -78,6 +84,14 @@ public class Trie {
         LinkedList<String> result = new LinkedList<>();
         getByPrefix_(cur, sb, result);
         return result;
+    }
+
+    private void update() throws IllegalArgumentException { // Обновление объекта в файле
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(TrieProject.FILE_PATH))) {
+            oos.writeObject(this);
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Не удалось обновить файл, возможна потеря данных, принудительное завершение");
+        }
     }
 
 }
